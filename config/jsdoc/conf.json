@@ -1,0 +1,28 @@
+{
+    "tags": {
+        "allowUnknownTags": true
+    },
+    "source": {
+        "include": ["lib/","index.js","README.md"],
+        "exclude": []
+    },
+    "plugins": [
+        "plugins/markdown",
+        "../../config/jsdoc/usestrict"
+    ],
+    "markdown": {
+        "parser": "gfm",
+        "hardwrap": true
+    },
+    "opts": {
+        "recurse": true,
+        "template": "templates/default",
+        "destination": "./doc/",
+        "encoding": "utf8",
+        "lenient": true,
+        "verbose": true
+    },
+    "templates": {
+        "cleverLinks": true
+    }
+}

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+rm -f luacov.*.out
+busted -c --defer-print test-lua
+luacov ./lib/lua/*.lua
+cat luacov.report.out

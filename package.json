@@ -1,0 +1,43 @@
+{
+  "name": "dworker",
+  "version": "0.6.0",
+  "description": "Distributed Worker System",
+  "main": "index.js",
+  "scripts": {
+    "test": "DEBUG=dw:* node_modules/.bin/mocha",
+    "cover": "node_modules/.bin/istanbul cover node_modules/.bin/_mocha -- -R spec",
+    "doc": "./script/jsdoc",
+    "jsdoc": "./script/jsdoc",
+    "luacheck": "luacheck ./lib/lua/*.lua",
+    "luatest": "./script/luatest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:DeNA/dworker.git"
+  },
+  "keywords": [
+    "distrubted",
+    "worker",
+    "actor",
+    "job",
+    "cluster"
+  ],
+  "author": "ngmoco LLC",
+  "license": "MIT",
+  "devDependencies": {
+    "mocha": "~2.1.0",
+    "istanbul": "~0.3.5",
+    "sinon": "~1.14.1",
+    "jsdoc": "3.3.0-beta1"
+  },
+  "dependencies": {
+    "lured": "0.0.2",
+    "redis": "~0.12.1",
+    "debug": "~2.1.1",
+    "async": "~0.9.0",
+    "lodash": "~2.4.1",
+    "bluebird": "~2.7.1",
+    "lru-cache": "~2.5.0",
+    "frax": "0.0.2"
+  }
+}
