@@ -1,11 +1,5 @@
 #!/bin/bash
-#
-# Build JSDoc for your Supernova Module.
-#
-# Usage:
-#   npm run-script postinstall
-#   ./script/jsdoc
-#
+
 ROOT_DIR=`cd $(dirname $0)/.. && pwd`
 BIN_DIR=$ROOT_DIR/node_modules/.bin
 JSDOC=$BIN_DIR/jsdoc
