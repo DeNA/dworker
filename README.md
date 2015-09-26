@@ -2,8 +2,8 @@
 
 Distributed worker system backed by Redis.
 
-## Installation (once published)
-    $ npm install dworker
+## Installation
+    $ npm install dworker [--save]
 
 ## Features
 * A Node.js version of "Actor model", where the 'actor' is called Worker.
