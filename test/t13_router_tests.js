@@ -5,6 +5,8 @@ var Promise = require('bluebird');
 var assert = require('assert');
 var debug = require('debug')('dw:test');
 var sinon = require('sinon');
+var semver = require('semver');
+var net = require('net');
 
 describe('Router tests', function () {
     var sandbox;
@@ -43,6 +45,81 @@ describe('Router tests', function () {
                 assert.ok(err);
             });
         });
+
+        if (semver.lt(process.version, '0.12.0')) {
+            it('listen(port, host, cb) signature should be used (default host)', function () {
+                var host = '0.0.0.0';
+                sandbox.stub(semver, 'lt', function  () {
+                    return false;
+                });
+                sandbox.stub(net.Server.prototype, 'listen', function (_option, cb) {
+                    assert.strictEqual(_option.port, 0);
+                    assert.strictEqual(_option.host, host);
+                    assert.strictEqual(_option.exclusive, true);
+                    cb();
+                });
+                sandbox.stub(net.Server.prototype, 'address', function () {
+                    return {
+                        address: host,
+                        family: 'IPv4',
+                        port: 8888
+                    };
+                });
+                return router.listen()
+                .then(function (addr) {
+                    assert.equal(addr.address, host);
+                    assert.equal(addr.port, 8888);
+                });
+            });
+            it('listen(port, host, cb) signature should be used', function () {
+                var host = '1.2.3.4';
+                sandbox.stub(semver, 'lt', function  () {
+                    return false;
+                });
+                sandbox.stub(net.Server.prototype, 'listen', function (_option, cb) {
+                    assert.strictEqual(_option.port, 0);
+                    assert.strictEqual(_option.host, host);
+                    assert.strictEqual(_option.exclusive, true);
+                    cb();
+                });
+                sandbox.stub(net.Server.prototype, 'address', function () {
+                    return {
+                        address: host,
+                        family: 'IPv4',
+                        port: 8888
+                    };
+                });
+                return router.listen(host)
+                .then(function (addr) {
+                    assert.equal(addr.address, host);
+                    assert.equal(addr.port, 8888);
+                });
+            });
+        } else {
+            it('listen(option) signature should be used', function () {
+                var host = '1.2.3.4';
+                sandbox.stub(semver, 'lt', function  () {
+                    return true;
+                });
+                sandbox.stub(net.Server.prototype, 'listen', function (_port, _host, cb) {
+                    assert.strictEqual(_port, 0);
+                    assert.strictEqual(_host, host);
+                    cb();
+                });
+                sandbox.stub(net.Server.prototype, 'address', function () {
+                    return {
+                        address: host,
+                        family: 'IPv4',
+                        port: 8888
+                    };
+                });
+                return router.listen(host)
+                .then(function (addr) {
+                    assert.equal(addr.address, host);
+                    assert.equal(addr.port, 8888);
+                });
+            });
+        }
     });
 
     describe('#close tests', function () {
@@ -141,7 +218,7 @@ describe('Router tests', function () {
                     assert.equal(received1.length, 2);
                     assert.deepEqual(received1[0], data0);
                     assert.deepEqual(received1[1], data1);
-                    done();
+                    return done();
                 }
             };
             router0.request({
@@ -164,7 +241,7 @@ describe('Router tests', function () {
                     assert.equal(received1.length, 2);
                     assert.deepEqual(received1[0], data0);
                     assert.deepEqual(received1[1], data1);
-                    done();
+                    return done();
                 }
             };
             router0.request({
@@ -207,7 +284,7 @@ describe('Router tests', function () {
                     assert.equal(received1.length, 2);
                     assert.deepEqual(received1[0], data0);
                     assert.deepEqual(received1[1], data1);
-                    done();
+                    return done();
                 }
             };
             router0.request({

@@ -4,8 +4,8 @@
   "description": "Distributed Worker System",
   "main": "index.js",
   "scripts": {
-    "test": "DEBUG=dw:* node_modules/.bin/mocha",
-    "cover": "node_modules/.bin/istanbul cover node_modules/.bin/_mocha -- -R spec",
+    "test": "DEBUG=dw:* istanbul cover _mocha",
+    "posttest": "istanbul check-coverage",
     "doc": "./script/jsdoc",
     "jsdoc": "./script/jsdoc",
     "luacheck": "luacheck ./lib/lua/*.lua",
@@ -25,19 +25,20 @@
   "author": "ngmoco LLC",
   "license": "MIT",
   "devDependencies": {
-    "mocha": "~2.1.0",
+    "async": "^1.5.2",
     "istanbul": "~0.3.5",
-    "sinon": "~1.14.1",
-    "jsdoc": "3.3.0-beta1"
+    "jsdoc": "3.3.0-beta1",
+    "mocha": "~2.2.5",
+    "sinon": "~1.14.1"
   },
   "dependencies": {
+    "bluebird": "~2.7.1",
+    "debug": "~2.1.1",
+    "frax": "0.0.2",
+    "lodash": "^4.0.0",
+    "lru-cache": "~2.5.0",
     "lured": "0.0.2",
     "redis": "~0.12.1",
-    "debug": "~2.1.1",
-    "async": "~0.9.0",
-    "lodash": "~2.4.1",
-    "bluebird": "~2.7.1",
-    "lru-cache": "~2.5.0",
-    "frax": "0.0.2"
+    "semver": "^5.1.0"
   }
 }
