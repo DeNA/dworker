@@ -1,5 +1,9 @@
 # dworker
 
+[![NPM version](https://badge.fury.io/js/dworker.svg)](http://badge.fury.io/js/dworker)
+[![Build Status](https://travis-ci.org/DeNA/dworker.svg?branch=master)](https://travis-ci.org/DeNA/dworker)
+[![Coverage Status](https://coveralls.io/repos/DeNA/dworker/badge.svg?branch=master&service=github)](https://coveralls.io/github/DeNA/dworker?branch=master)
+
 Distributed worker system backed by Redis.
 
 ## Installation
