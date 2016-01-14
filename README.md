@@ -104,11 +104,11 @@ br.start()
 ```
 
 ## Limitation
-* As redis-server being the centralized DB as well as message router, when redis goes down, whole system goes down.
-* All worker communication traffic converges at Redis server (uses Lists). This could be a bottleneck in throughput.
+* If nodjs < 0.12.0, dworker does not work with cluster module. (#1 listen(0) issue). Use node >= 0.12.0 to use cluster module.
 
 ## Consideration
-* Worker instance sits in memory for a long time. Try to persist application data to DB and purge data from memory where possible. Needless to say, leave critical data in memory won't be recovered. (See Limitation)
+* Design your application in a way that critical data is always stored on persistent storage in case the data on Redis
+server is unexpectedly wiped out.
 
 ## LICENSE
 
