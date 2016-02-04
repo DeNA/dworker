@@ -2,9 +2,10 @@
 --   KEYS[1] global hash key. (gh)
 --   KEYS[2] worker list hash. (wh)
 --   KEYS[3] broker list hash. (bh)
---   KEYS[4] broker list hash. (cz) - unused
---   KEYS[5] worker sets (wz)
---   KEYS[6] recovery sets (rz)
+--   KEYS[4] per cluster broker ID & load(as score) sorted sets (cz) - unused
+--   KEYS[5] per cluster broker ID & hash key (as score) sorted sets (bz) - unused
+--   KEYS[6] worker sets (wz)
+--   KEYS[7] recovery sets (rz)
 --   ARGV[1] Broker ID - if empty-string, find only
 --   ARGV[2] Worker (class) name
 --   ARGV[3] Worker ID
@@ -119,7 +120,7 @@ repeat
     end
 
     -- Check rz to see if the worker is under recovery.
-    tmp = redis.call("ZSCORE", KEYS[6], workerId)
+    tmp = redis.call("ZSCORE", KEYS[7], workerId)
     if not tmp then
         -- The worker does not exist in rz.
         -- Treat this case as creating a brand new worker.
@@ -128,7 +129,7 @@ repeat
     end
 
     -- Remove it from rz
-    redis.call("ZREM", KEYS[6], workerId)
+    redis.call("ZREM", KEYS[7], workerId)
     -- The worker is salvaged but not recovered yet.
     createdAt = tonumber(tmp) -- use original creation time
     if ttl == 0 or now - createdAt < ttl then
@@ -136,7 +137,7 @@ repeat
         -- Set this broker as the worker's new broker
         info.brokerId = ARGV[1]
         redis.call("HSET", KEYS[2], workerId, cjson.encode(info))
-        redis.call("ZADD", KEYS[5], createdAt, workerId)
+        redis.call("ZADD", KEYS[6], createdAt, workerId)
         redis.call("HINCRBY", KEYS[1], 'workersRecovered', 1)
     end
 until true
@@ -151,7 +152,7 @@ if notFound then
     info.brokerId = ARGV[1]
     info.attributes = attributes
     redis.call("HSET", KEYS[2], workerId, cjson.encode(info))
-    redis.call("ZADD", KEYS[5], createdAt, workerId)
+    redis.call("ZADD", KEYS[6], createdAt, workerId)
     if forRecovery ~= nil and forRecovery == 1 then
         redis.log(redis.LOG_DEBUG, "Recovering a worker: " .. workerId);
         redis.call("HINCRBY", KEYS[1], 'workersRecovered', 1)

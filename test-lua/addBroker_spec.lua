@@ -8,6 +8,7 @@ describe("addBroker.lua", function()
         ["wh"]="test:wh",
         ["bh"]="test:bh",
         ["cz"]="test:cz:pvp",
+        ["bz"]="test:bz:pvp",
         ["wz"]="test:wz:br01",
         ["rz"]="test:rz:br01"
     }
@@ -26,11 +27,13 @@ describe("addBroker.lua", function()
         local load = "10"
         local clustername = "pvp"
         local address = "1.2.3.4:6690"
+        local hashKey = "3437877555704920"
         local result = call_redis_script(script,  {
             keys.gh,
             keys.wh,
             keys.bh,
             keys.cz,
+            keys.bz,
             keys.wz,
             keys.rz,
         }, {
@@ -38,7 +41,8 @@ describe("addBroker.lua", function()
             chPrefix,
             load,
             clustername,
-            address
+            address,
+            hashKey
         })
         assert.are.equals(type(result), "table")
         assert.are.equals(#result, 1)
@@ -56,11 +60,13 @@ describe("addBroker.lua", function()
         local load = "10"
         local clustername = "pvp"
         local address = "1.2.3.4:6690"
+        local hashKey = "3437877555704920"
         local result = call_redis_script(script,  {
             keys.gh,
             keys.wh,
             keys.bh,
             keys.cz,
+            keys.bz,
             keys.wz,
             keys.rz,
         }, {
@@ -68,7 +74,8 @@ describe("addBroker.lua", function()
             chPrefix,
             load,
             clustername,
-            address
+            address,
+            hashKey
         })
         assert.are.equals(type(result), "table")
         assert.are.equals(#result, 1)
@@ -86,6 +93,7 @@ describe("addBroker.lua", function()
         local load = "10"
         local clustername = "pvp"
         local address = "1.2.3.4:6690"
+        local hashKey = "3437877555704920"
         local createdAt = os.time()*1000
 
         -- Add a worker to wh and wz
@@ -104,6 +112,7 @@ describe("addBroker.lua", function()
             keys.wh,
             keys.bh,
             keys.cz,
+            keys.bz,
             keys.wz,
             keys.rz,
         }, {
@@ -111,7 +120,8 @@ describe("addBroker.lua", function()
             chPrefix,
             load,
             clustername,
-            address
+            address,
+            hashKey
         })
         assert.are.equals(type(result), "table")
         assert.are.equals(#result, 1)
@@ -134,6 +144,7 @@ describe("addBroker.lua", function()
         local load = "10"
         local clustername = "pvp"
         local address = "1.2.3.4:6690"
+        local hashKey = "3437877555704920"
         local createdAt = os.time()*1000
 
         -- Add a worker to wh and wz
@@ -152,6 +163,7 @@ describe("addBroker.lua", function()
             keys.wh,
             keys.bh,
             keys.cz,
+            keys.bz,
             keys.wz,
             keys.rz,
         }, {
@@ -159,7 +171,8 @@ describe("addBroker.lua", function()
             chPrefix,
             load,
             clustername,
-            address
+            address,
+            hashKey
         })
         assert.are.equals(type(result), "table")
         assert.are.equals(#result, 1)
@@ -188,6 +201,7 @@ describe("addBroker.lua", function()
         local load = "10"
         local clustername = "pvp"
         local address = "1.2.3.4:6690"
+        local hashKey = "3437877555704920"
         local createdAt = os.time()*1000
         local brokersBroken = tonumber(redis.call("HGET", keys.gh, "brokersBroken"))
         if brokersBroken == nil then
@@ -202,6 +216,7 @@ describe("addBroker.lua", function()
             keys.wh,
             keys.bh,
             keys.cz,
+            keys.bz,
             keys.wz,
             keys.rz,
         }, {
@@ -209,7 +224,8 @@ describe("addBroker.lua", function()
             chPrefix,
             load,
             clustername,
-            address
+            address,
+            hashKey
         })
         assert.are.equals(type(result), "table")
         assert.are.equals(#result, 1)
@@ -229,6 +245,7 @@ describe("addBroker.lua", function()
         local load = "10"
         local clustername = "pvp"
         local address = "1.2.3.4:6690"
+        local hashKey = "3437877555704920"
         local createdAt = os.time()*1000
         local workersBroken = tonumber(redis.call("HGET", keys.gh, "workersBroken"))
         if workersBroken == nil then
@@ -245,6 +262,7 @@ describe("addBroker.lua", function()
             keys.wh,
             keys.bh,
             keys.cz,
+            keys.bz,
             keys.wz,
             keys.rz,
         }, {
@@ -252,7 +270,8 @@ describe("addBroker.lua", function()
             chPrefix,
             load,
             clustername,
-            address
+            address,
+            hashKey
         })
         assert.are.equals(type(result), "table")
         assert.are.equals(#result, 1)
@@ -275,6 +294,7 @@ describe("addBroker.lua", function()
         local load = "10"
         local clustername = "pvp"
         local address = "1.2.3.4:6690"
+        local hashKey = "3437877555704920"
         local createdAt = os.time()*1000
         local workersBroken = tonumber(redis.call("HGET", keys.gh, "workersBroken"))
         if workersBroken == nil then
@@ -291,6 +311,7 @@ describe("addBroker.lua", function()
             keys.wh,
             keys.bh,
             keys.cz,
+            keys.bz,
             keys.wz,
             keys.rz,
         }, {
@@ -298,7 +319,8 @@ describe("addBroker.lua", function()
             chPrefix,
             load,
             clustername,
-            address
+            address,
+            hashKey
         })
         assert.are.equals(type(result), "table")
         assert.are.equals(#result, 1)

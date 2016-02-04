@@ -2,7 +2,8 @@
 --   KEYS[1] global hash key. (gh)
 --   KEYS[2] worker list hash. (wh)
 --   KEYS[3] broker list hash. (bh)
---   KEYS[4] cluster sets (cz)
+--   KEYS[4] per cluster broker ID & load(as score) sorted sets (cz)
+--   KEYS[5] per cluster broker ID & hash key (as score) sorted sets (bz)
 --   ARGV[1] max retries
 -- Output parameters
 --   [{string}brokerId, {string}clustername, {string}address]
@@ -65,6 +66,7 @@ for i=1, maxRetries+1 do
     -- Remove it, then try again.
     redis.log(redis.LOG_DEBUG, "deleting broker from cz table: " .. bids[1])
     redis.call("ZREM", KEYS[4], bids[1])
+    redis.call("ZREM", KEYS[5], bids[1])
 end
 
 if not minBrId then

@@ -2,9 +2,10 @@
 --   KEYS[1] global hash key. (gh)
 --   KEYS[2] worker list hash. (wh)
 --   KEYS[3] broker list hash. (bh)
---   KEYS[4] cluster sets (cz)
---   KEYS[5] worker sets (wz)
---   KEYS[6] recovery sets (rz)
+--   KEYS[4] per cluster broker ID & load(as score) sorted sets (cz)
+--   KEYS[5] per cluster broker ID & hash key (as score) sorted sets (bz)
+--   KEYS[6] worker sets (wz)
+--   KEYS[7] recovery sets (rz)
 --   ARGV[1] Target Broker ID
 --   ARGV[2] Mode - 0:Salvage, 1:Destroy, 2: Destroy w/o salvage
 -- Output parameters
@@ -20,6 +21,7 @@ if mode == 0 then
     if not tmp then
         -- Remove it from cz
         redis.call("ZREM", KEYS[4], brokerId)
+        redis.call("ZREM", KEYS[5], brokerId)
         return
     end
 
@@ -29,6 +31,7 @@ if mode == 0 then
         redis.call("HDEL", KEYS[3], brokerId)
         -- Remove it from cz
         redis.call("ZREM", KEYS[4], brokerId)
+        redis.call("ZREM", KEYS[5], brokerId)
         return;
     end
 
@@ -76,18 +79,19 @@ local function salvage(kWh, kWz, kRz)
 end
 -- Salvage COMPLETE
 
-salvage(KEYS[2], KEYS[5], KEYS[6])
+salvage(KEYS[2], KEYS[6], KEYS[7])
 
 -- Remove the broker info.
 redis.call("HDEL", KEYS[3], brokerId)
 -- Remove it from cz
 redis.call("ZREM", KEYS[4], brokerId)
+redis.call("ZREM", KEYS[5], brokerId)
 
 if mode == 2 then
-    redis.call("DEL", KEYS[5])
+    redis.call("DEL", KEYS[6])
 end
 
-if redis.call("ZCARD", KEYS[6]) > 0 then
+if redis.call("ZCARD", KEYS[7]) > 0 then
     local chPrefix = redis.call("HGET", KEYS[1], 'chPrefix')
     redis.call("PUBLISH", chPrefix .. ':*', '{"sig":"recover"}')
 end
