@@ -28,7 +28,7 @@
     "async": "^1.5.2",
     "coveralls": "^2.11.6",
     "istanbul": "~0.3.5",
-    "jsdoc": "3.3.0-beta1",
+    "jsdoc": "~3.4.0",
     "mocha": "~2.2.5",
     "sinon": "~1.14.1"
   },

@@ -16,6 +16,7 @@ Distributed worker system backed by Redis.
 * Ability to defines more than one "clusters" to set up which cluster a worker should be running in.
 * Automatic worker recovery feature. The system detects a death of processes, then salvage workers that were running on the dead process, then automatically reconstruct them on other processes in a collaborative manner.
 * No polling. The dworker uses Redis pubsub to signal other brokers (a manger of workers) to wake them up.
+* Automatic health-check feature. Each broker periodically check the logical adjucent neighbor broker. When a broker is found dead, the workers held by the dead broker will automatically migrated to other active brokers.
 * All distributed - no central entity (except redis-server).
 
 ## Requirements
