@@ -59,25 +59,6 @@ describe("healthCheck.lua", function()
         print("Error msg: " .. result[2])
     end)
 
-    it("Should fail if the broker is not in the bz table", function()
-        redis.call("ZADD", keys.cz, 10, "br00")
-        redis.call("ZADD", keys.bz, 123, "br00")
-        local brId = "br01"
-        local result = call_redis_script(script,  {
-            keys.gh,
-            keys.wh,
-            keys.bh,
-            keys.cz,
-            keys.bz
-        }, {
-            brId
-        })
-        assert.are.equals(type(result), "table")
-        assert.are.equals(#result, 2)
-        assert.are.equals(result[1], 2)
-        print("Error msg: " .. result[2])
-    end)
-
     it("Should succeed (with no op if cz/bz has only yourself", function()
         redis.call("ZADD", keys.cz, 10, "br01")
         redis.call("ZADD", keys.bz, 123, "br01")
