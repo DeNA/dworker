@@ -32,6 +32,13 @@ redis.call = function(cmd, ...)
       end
  
       return result;
+    end,
+    zrank = function()
+      if result == nil then
+        return false;
+      end
+
+      return result;
     end
   }
  

@@ -7,6 +7,7 @@ var assert = require('assert');
 var debug = require('debug')('dw:test');
 var helper = require('./helper');
 var redis = require('redis');
+var generateHashKey = require('../lib/common').generateHashKey;
 
 describe('Lua script tests', function () {
     var br;
@@ -58,18 +59,20 @@ describe('Lua script tests', function () {
             .then(function () {
                 return client.evalshaAsync(
                     scripts.addBroker.sha,
-                    6,
+                    7,
                     keys.gh,
                     keys.wh,
                     keys.bh,
                     keys.cz + ':main',
+                    keys.bz + ':main',
                     keys.wz + ':' + br.id,
                     keys.rz,
                     br.id,
                     br._chPrefix,
                     load,
                     clustername,
-                    addr
+                    addr,
+                    generateHashKey(br.id)
                 );
             })
             .then(function (res) {
@@ -143,18 +146,20 @@ describe('Lua script tests', function () {
             .then(function () {
                 return client.evalshaAsync(
                     scripts.addBroker.sha,
-                    6,
+                    7,
                     keys.gh,
                     keys.wh,
                     keys.bh,
                     keys.cz + ':main',
+                    keys.bz + ':main',
                     keys.wz + ':' + br.id,
                     keys.rz,
                     br.id,
                     br._chPrefix,
                     load,
                     clustername,
-                    addr
+                    addr,
+                    generateHashKey(br.id)
                 );
             })
             .then(function (res) {
@@ -592,11 +597,12 @@ describe('Lua script tests', function () {
             .then(function () {
                 return client.evalshaAsync(
                     scripts.findOrCreateWorker.sha,
-                    6,
+                    7,
                     keys.gh,
                     keys.wh,
                     keys.bh,
                     keys.cz + ':' + clustername,
+                    keys.bz + ':' + clustername,
                     keys.wz + ':br02',
                     keys.rz,
                     'br02',
