@@ -605,8 +605,8 @@ describe('Router tests', function () {
             soc.on('error', function (err) {
                 debug('test client socket:  error event: %s', err.message);
             });
-            soc.on('close', function (had_error) {
-                debug('test client socket: close event: had_error=%s', had_error);
+            soc.on('close', function (hadError) {
+                debug('test client socket: close event: hadError=%s', hadError);
                 done();
             });
         });
@@ -627,8 +627,8 @@ describe('Router tests', function () {
             soc.on('error', function (err) {
                 debug('test client socket:  error event: %s', err.message);
             });
-            soc.on('close', function (had_error) {
-                debug('test client socket: close event: had_error=%s', had_error);
+            soc.on('close', function (hadError) {
+                debug('test client socket: close event: hadError=%s', hadError);
                 var elapsed = Date.now() - since;
                 debug('elapsed=' + elapsed);
                 assert.ok(elapsed > socTimeout*2 - 10);

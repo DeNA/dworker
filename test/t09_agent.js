@@ -22,7 +22,7 @@ describe('Agent tests', function () {
             });
         }
     };
-    
+
     it('Constructor test', function () {
         var agent = new Agent('me', dummyBroker);
         assert.strictEqual(agent.id, 'me');

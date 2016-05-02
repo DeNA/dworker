@@ -63,7 +63,7 @@ describe('Recovery tests', function () {
     };
 
     before(function () {
-        function logger (data) {
+        function logger(data) {
             debug('LOG(' + data.level + '): ' + data.message);
         }
 

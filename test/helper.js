@@ -11,10 +11,10 @@ function whilst(test, fn) {
         return fn()
         .then(loop);
     };
- 
+
     return loop();
 };
- 
+
 exports.doWhilst =
 function doWhilst(fn, test) {
     var loop = function () {
@@ -26,14 +26,14 @@ function doWhilst(fn, test) {
             return loop();
         });
     };
- 
+
     return loop();
 };
 
 // Remove all keys used by the given broker.
 // The broker must a valid instance.
 exports.initRedis =
-function initRedis (broker) {
+function initRedis(broker) {
     var c = broker._pub;
     var pattern = broker._option.ns + ':*';
     return c.keysAsync(pattern)

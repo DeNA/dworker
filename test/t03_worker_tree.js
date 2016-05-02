@@ -96,11 +96,12 @@ describe('Worker tree test', function () {
             }
         } else {
             this.destroy();
-            cb(null, 1);
+            return cb(null, 1);
         }
     };
 
     Node.prototype._doGetSum = function (data, cb) {
+        void(data);
         var self = this;
         async.parallel([
             function (done) {
@@ -121,7 +122,7 @@ describe('Worker tree test', function () {
         br = new Broker(brId);
         br.registerWorker('Node', Node);
         return br._pub.hdelAsync(br._keys.bh, br.id)
-        .then(function() {
+        .then(function () {
             return br.start();
         });
     });
@@ -133,7 +134,7 @@ describe('Worker tree test', function () {
     it('Create worker', function (done) {
         function sum(depth) {
             var val = 0;
-            for(var i = 0; i < depth; ++i) {
+            for (var i = 0; i < depth; ++i) {
                 val += Math.pow(2, i);
             }
             return val;
@@ -149,11 +150,14 @@ describe('Worker tree test', function () {
                 maxDepth: maxDepth
             }
         };
-        
+
         br.createWorker('Node', option, function (err, agent) {
+            assert.ifError(err);
+
             if (!agent) {
                 return;
             }
+
             agent.ask('getSum', {}, function (err, sum) {
                 assert.ifError(err);
                 debug('SUM=' + sum);
