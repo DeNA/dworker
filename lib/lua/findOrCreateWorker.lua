@@ -25,15 +25,27 @@ local attributes = nil
 local now = 0
 local ttl = 0
 local forRecovery = 0
+local clusterName = nil
 local create = false
-redis.log(redis.LOG_DEBUG, "ARGV[1]=" .. ARGV[1])
+
 if type(ARGV[1]) == "string" and #ARGV[1] > 0 then
+    -- Obtain clustername from bh table.
+    local tmp = redis.call('HGET', KEYS[3], ARGV[1])
+    if not tmp then
+        return {0, false} -- target broker not found
+    end
+    local brInfo
+    if not pcall(function () brInfo = cjson.decode(tmp) end) then
+        return {0, false} -- target broker's info is broken
+    end
+
     create = true
     workerName = ARGV[2]
     attributes = cjson.decode(ARGV[4])
     now = tonumber(ARGV[5])
     ttl = tonumber(ARGV[6])
     forRecovery = tonumber(ARGV[7])
+    clusterName = brInfo.cn;
 
     -- Determine the workerId
     if workerId == "" or workerId == nil then
@@ -151,6 +163,7 @@ if notFound then
     info.name = workerName
     info.brokerId = ARGV[1]
     info.attributes = attributes
+    info.cn = clusterName
     redis.call("HSET", KEYS[2], workerId, cjson.encode(info))
     redis.call("ZADD", KEYS[6], createdAt, workerId)
     if forRecovery ~= nil and forRecovery == 1 then

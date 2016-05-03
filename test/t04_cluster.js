@@ -44,10 +44,10 @@ describe('Cluster tests', function () {
     ];
 
     before(function () {
-        brs.forEach(function(i) {
+        brs.forEach(function (i) {
             i.br = new Broker(i.bid, { clustername: i.cln });
         });
-        wks.forEach(function(i) {
+        wks.forEach(function (i) {
             i.wkr = (function () {
                 var wkr = function () {
                     Worker.apply(this, arguments);
@@ -78,7 +78,7 @@ describe('Cluster tests', function () {
 
         // Now, start all brokers
         var promises = [];
-        brs.forEach(function(i) {
+        brs.forEach(function (i) {
             promises.push(
                 i.br._pub.hdelAsync(i.br._keys.bh, i.br.id)
                 .then(function () {
@@ -93,7 +93,7 @@ describe('Cluster tests', function () {
     });
 
     after(function () {
-        brs.forEach(function(i) {
+        brs.forEach(function (i) {
             i.br.destroy();
         });
     });
@@ -111,7 +111,7 @@ describe('Cluster tests', function () {
                 debug('data:', data);
                 assert.equal(data.wkn, i.wkn);
                 assert.equal(data.cln, i.cln);
-                assert.equal(data.bid, i.cln.replace(/c/,'b'));
+                assert.equal(data.bid, i.cln.replace(/c/, 'b'));
             }));
         });
         return Promise.all(promises);

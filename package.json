@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "DEBUG=dw:* istanbul cover _mocha",
-    "posttest": "istanbul check-coverage",
+    "posttest": "eslint index.js lib test; istanbul check-coverage",
+    "lint": "eslint index.js lib test",
     "doc": "./script/jsdoc",
     "jsdoc": "./script/jsdoc",
     "luacheck": "luacheck ./lib/lua/*.lua",
@@ -27,6 +28,7 @@
   "devDependencies": {
     "async": "^1.5.2",
     "coveralls": "^2.11.6",
+    "eslint": "^1.10.3",
     "istanbul": "~0.3.5",
     "jsdoc": "~3.4.0",
     "mocha": "~2.2.5",
@@ -41,5 +43,33 @@
     "lured": "0.0.2",
     "redis": "~0.12.1",
     "semver": "^5.1.0"
+  },
+  "eslintConfig": {
+    "rules": {
+      "callback-return": [2, ["callback", "cb", "next", "done"]],
+      "camelcase": [2, {"properties": "never"}],
+      "comma-dangle": 0,
+      "comma-spacing": [2, {"before": false, "after": true}],
+      "indent": [ 2, 4, { "SwitchCase": 1 } ],
+      "linebreak-style": [ 2, "unix" ],
+      "max-len": [2, 120, 4],
+      "no-extra-boolean-cast": [0],
+      "no-new": 2,
+      "no-spaced-func": [2],
+      "no-trailing-spaces": [2],
+      "no-unused-vars": [2, {"args": "all"}],
+      "no-use-before-define": [2, "nofunc"],
+      "quotes": [ 0, "single" ],
+      "semi": [ 2, "always" ],
+      "space-after-keywords": [ 2, "always" ],
+      "space-before-function-paren": [2, {"anonymous": "always", "named": "never"}],
+      "space-return-throw-case": 2
+    },
+    "env": {
+      "mocha": true,
+      "node": true,
+      "mongo": true
+    },
+    "extends": "eslint:recommended"
   }
 }

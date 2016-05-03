@@ -47,10 +47,12 @@ describe('Worker tests', function () {
         cb(null, data);
     };
     MyWorker.prototype.getGreeting = function (data, cb) {
+        void(data);
         debug('Worker#getGreeting called.');
         cb(null, this._greeting);
     };
     MyWorker.prototype.die = function (data, cb) {
+        void(data);
         debug('Worker#die called.');
         this.destroy();
         cb(null, {});
@@ -189,7 +191,7 @@ describe('Worker tests', function () {
             br._workerReg = stash;
         });
         it('Use custom registry', function () {
-            var _reg = {'PresetWorker': function() {}};
+            var _reg = {'PresetWorker': function () {}};
             var customReg = {
                 add: function (name, ctor) {
                     _reg[name] = ctor;
@@ -374,12 +376,14 @@ describe('Worker tests', function () {
         util.inherits(HisWorker, Worker);
 
         HisWorker.prototype.onCreate = function (info, cb) {
+            void(info);
             debug('onCreate called');
             transition.push('create');
             onCreateHandler.call(this);
             cb();
         };
         HisWorker.prototype.onDestroy = function (info, cb) {
+            void(info);
             debug('onDestroy called:', transition);
             transition.push('destroy');
             debug('onDestroy called2:', transition);
@@ -476,7 +480,6 @@ describe('Worker tests', function () {
 
     describe('Worker error tests', function () {
         var agent;
-        var transition = [];
 
         function HerWorker() {
             Worker.apply(this, arguments);
@@ -489,7 +492,6 @@ describe('Worker tests', function () {
         };
 
         beforeEach(function () {
-            transition = [];
             br.registerWorker(HerWorker);
             return br.createWorker('HerWorker', function (err, _agent) {
                 assert.ifError(err);
@@ -513,7 +515,7 @@ describe('Worker tests', function () {
             return Worker.prototype.onAsk('laugh', {})
             .then(function () {
                 throw new Error('Should throw');
-            },function (e) {
+            }, function (e) {
                 assert.equal(e.name, 'Error');
             });
         });

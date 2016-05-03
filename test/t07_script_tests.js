@@ -186,7 +186,7 @@ describe('Lua script tests', function () {
                         assert.strictEqual(_load, load);
                     });
                 })
-                .then(function() {
+                .then(function () {
                     return client.zscoreAsync(keys.wz+':'+br.id, workerId)
                     .then(function (val) {
                         assert.strictEqual(val, null);

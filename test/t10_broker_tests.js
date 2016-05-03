@@ -674,7 +674,6 @@ describe('Broker tests', function () {
             var results = [
                 [[JSON.stringify({ id: 'wk01', name: 'MyWorker', attributes: { static: false } })], 1],
                 [[JSON.stringify({ id: 'wk02', name: 'MyWorker', attributes: { static: false } })], 0]
-                
             ];
             sandbox.stub(br._pub, 'evalshaAsync', function () {
                 debug('results.length=' + results.length);
@@ -706,6 +705,7 @@ describe('Broker tests', function () {
         it('Non-existing method call', function (done) {
             var requesterId = 777;
             sandbox.stub(br, '_replyToBroker', function (seq, pl, reqId) {
+                void(seq);
                 assert.equal(pl.err.name, 'Error');
                 assert.strictEqual(reqId, requesterId);
                 done();
@@ -721,6 +721,7 @@ describe('Broker tests', function () {
                 return Promise.reject(new Error('failed, hahaha'));
             });
             sandbox.stub(br, '_replyToBroker', function (seq, pl, reqId) {
+                void(seq);
                 assert.equal(pl.err.name, 'Error');
                 assert.strictEqual(reqId, requesterId);
                 done();
@@ -779,6 +780,7 @@ describe('Broker tests', function () {
         it('Worker not in ACTIVE should fail', function () {
             br._workers[33] = { state: Worker.State.ACTIVATING };
             sandbox.stub(br, '_replyToWorker', function (seq, pl, src, wid) {
+                void(seq);
                 void(src);
                 void(wid);
                 assert.ok(pl.err);
@@ -924,7 +926,7 @@ describe('Broker tests', function () {
         });
 
         it('#_onCreateWorker should ignore rejection by Worker#onCreate', function () {
-            function MyWorker () {
+            function MyWorker() {
                 Worker.apply(this, arguments);
             }
             util.inherits(MyWorker, Worker);
@@ -945,7 +947,7 @@ describe('Broker tests', function () {
 
         it('If createWorker.lua returns other broker, that will be returned', function () {
             var otherId = 'dworker-rules!';
-            function MyWorker () {
+            function MyWorker() {
                 Worker.apply(this, arguments);
             }
             util.inherits(MyWorker, Worker);
@@ -964,7 +966,7 @@ describe('Broker tests', function () {
     });
 
     describe('#_destroyWorker tests', function () {
-        function MyWorker () {
+        function MyWorker() {
             Worker.apply(this, arguments);
         }
         util.inherits(MyWorker, Worker);
@@ -1029,7 +1031,7 @@ describe('Broker tests', function () {
                 assert.equal(score, initialLoad + delta);
                 assert.equal(member, br.id);
                 assert.ok(br._loadUpdated);
-                cb(new Error('fake error'));
+                cb(new Error('fake error')); // eslint-disable-line callback-return
                 done();
             });
             br._updateLoad({/* not used */}, delta); // this won't return promise
@@ -1045,7 +1047,7 @@ describe('Broker tests', function () {
             var initialTimeOffset = br._timeOffset;
             var initialLastTimeSync = br._lastTimeSync;
             sandbox.stub(br._pub, 'time', function (cb) {
-                cb(new Error('fake error'));
+                cb(new Error('fake error')); // eslint-disable-line callback-return
                 assert.strictEqual(br._timeOffset, initialTimeOffset);
                 assert.strictEqual(br._lastTimeSync, initialLastTimeSync);
                 done();

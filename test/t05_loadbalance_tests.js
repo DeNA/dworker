@@ -25,6 +25,7 @@ describe('Load-balance tests', function () {
     };
 
     MyWorker.prototype.onDestroy = function (info, cb) {
+        void(info);
         debug('Worker#onDestroy called');
         return Promise.resolve().nodeify(cb);
     };
@@ -53,7 +54,7 @@ describe('Load-balance tests', function () {
         client = br.pub;
         br.registerWorker(MyWorker);
         return br._pub.hdelAsync(br._keys.bh, br.id)
-        .then(function() {
+        .then(function () {
             return br.start();
         });
     });
@@ -64,6 +65,7 @@ describe('Load-balance tests', function () {
 
     it('Initial load should be zero', function (done) {
         client.zscore(cz, brId, function (err, load) {
+            assert.ifError(err);
             assert.strictEqual(typeof load, 'string');
             assert.strictEqual(load, '0');
             done();
@@ -75,6 +77,7 @@ describe('Load-balance tests', function () {
         .then(function (_agent) {
             agent = _agent;
             client.zscore(cz, brId, function (err, load) {
+                assert.ifError(err);
                 assert.strictEqual(load, '1');
             });
         });

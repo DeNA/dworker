@@ -14,7 +14,7 @@ describe('Recovery tests', function () {
 
     before(function () {
         sandbox = sinon.sandbox.create();
-        function logger (data) {
+        function logger(data) {
             debug('LOG(' + data.level + '): ' + data.message);
         }
 
