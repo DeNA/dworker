@@ -1,6 +1,7 @@
 'use strict';
 
 var Promise = require('bluebird');
+var redis = Promise.promisifyAll(require('redis'));
 
 exports.whilst =
 function whilst(test, fn) {
@@ -33,11 +34,14 @@ function doWhilst(fn, test) {
 // Remove all keys used by the given broker.
 // The broker must a valid instance.
 exports.initRedis =
-function initRedis(broker) {
-    var c = broker._pub;
-    var pattern = broker._option.ns + ':*';
+function initRedis() {
+    var c = redis.createClient();
+    var pattern = 'dw:*';
     return c.keysAsync(pattern)
     .each(function (key) {
         return c.delAsync(key);
+    })
+    .then(function () {
+        c.quit();
     });
 };

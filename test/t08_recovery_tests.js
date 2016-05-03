@@ -9,10 +9,14 @@ var debug = require('debug')('dw:test');
 var helper = require('./helper');
 
 describe('Recovery tests', function () {
-    var brs = [];
-    var numCreated = 0;
-    var numRecovered = 0;
-    var numDestroyed = 0;
+    var brs;
+    var numCreated;
+    var numRecovered;
+    var numDestroyed;
+
+    function logger(data) {
+        debug('LOG(' + data.level + '): ' + data.message);
+    }
 
     function MyWorker() {
         Worker.apply(this, arguments);
@@ -42,6 +46,9 @@ describe('Recovery tests', function () {
         if (method === 'die') {
             return this.die(data);
         }
+        if (method === 'getClusterName') {
+            return this.getClusterName();
+        }
         return Promise.reject(new Error('Unexpected method: ' + method));
     };
     MyWorker.prototype.onTell = function (method, data) {
@@ -61,25 +68,16 @@ describe('Recovery tests', function () {
         this.destroy({noRecover: data.noRecover});
         return Promise.resolve(data);
     };
+    MyWorker.prototype.getClusterName = function () {
+        debug('Worker#getClusterName called.');
+        return Promise.resolve({clustername: this.__priv.br.clustername});
+    };
 
-    before(function () {
-        function logger(data) {
-            debug('LOG(' + data.level + '): ' + data.message);
-        }
-
-        for (var i = 0; i < 2; ++i) {
-            brs.push(new Broker('br0' + i, {
-                retries: {
-                    initialInterval: 25,
-                    maxInterval: 100,
-                    duration: 400
-                }
-            }));
-
-            brs[i].on('log', logger);
-        }
-
-        return helper.initRedis(brs[0]);
+    beforeEach(function () {
+        brs = [];
+        numCreated = 0;
+        numRecovered = 0;
+        numDestroyed = 0;
     });
 
     afterEach(function () {
@@ -101,164 +99,240 @@ describe('Recovery tests', function () {
         });
     });
 
-    describe('Broker destroy & recover test', function () {
+    describe('In the same cluster', function () {
         beforeEach(function () {
-            // Start brs[0] first
-            return brs[0].start();
+            return helper.initRedis()
+            .then(function () {
+                for (var i = 0; i < 2; ++i) {
+                    brs.push(new Broker('br0' + i, {
+                        retries: {
+                            initialInterval: 25,
+                            maxInterval: 100,
+                            duration: 400
+                        }
+                    }));
+
+                    brs[i].on('log', logger);
+                }
+            });
         });
 
-        it('Create worker -> destroy -> findWorker from another broker', function () {
-            var workerId;
+        describe('Broker destroy & recover test', function () {
+            beforeEach(function () {
+                // Start brs[0] first
+                return brs[0].start();
+            });
 
-            brs[0].registerWorker(MyWorker);
-            brs[1].registerWorker(MyWorker);
-            return brs[0].createWorker('MyWorker', { attributes: { recoverable: true }})
-            .then(function (agent) {
-                assert(typeof agent === 'object');
-                assert(typeof agent.ask === 'function');
-                assert(typeof agent.tell === 'function');
+            it('Create worker -> destroy -> findWorker from another broker', function () {
+                var workerId;
 
-                workerId = agent.id;
-
-                return agent.ask('echo', {msg: 'yahoo'})
-                .then(function (res) {
-                    assert.strictEqual(res.msg, 'yahoo');
-                });
-            })
-            .then(function () {
-                return brs[1].start()
-                .then(function () {
-                    return brs[0].destroy();
-                });
-            })
-            .then(function () {
-                return brs[1].findWorker(workerId)
+                brs[0].registerWorker(MyWorker);
+                brs[1].registerWorker(MyWorker);
+                return brs[0].createWorker('MyWorker', { attributes: { recoverable: true }})
                 .then(function (agent) {
-                    assert.ok(agent !== null, 'Valid agent must be returned');
-                    assert.strictEqual(agent.id, workerId);
-                    return agent.ask('echo', { msg: 'yahoo!' });
+                    assert(typeof agent === 'object');
+                    assert(typeof agent.ask === 'function');
+                    assert(typeof agent.tell === 'function');
+
+                    workerId = agent.id;
+
+                    return agent.ask('echo', {msg: 'yahoo'})
+                    .then(function (res) {
+                        assert.strictEqual(res.msg, 'yahoo');
+                    });
                 })
-                .then(function (data) {
-                    debug('echoed data:', data);
+                .then(function () {
+                    return brs[1].start()
+                    .then(function () {
+                        return brs[0].destroy();
+                    });
+                })
+                .then(function () {
+                    return brs[1].findWorker(workerId)
+                    .then(function (agent) {
+                        assert.ok(agent !== null, 'Valid agent must be returned');
+                        assert.strictEqual(agent.id, workerId);
+                        return agent.ask('echo', { msg: 'yahoo!' });
+                    })
+                    .then(function (data) {
+                        debug('echoed data:', data);
+                    });
+                });
+            });
+
+            it('Create worker -> quit -> findWorker from other broker', function () {
+                var workerId;
+
+                brs[0].registerWorker(MyWorker);
+                brs[1].registerWorker(MyWorker);
+                return brs[0].createWorker('MyWorker', { attributes: { recoverable: true }})
+                .then(function (agent) {
+                    assert(typeof agent === 'object');
+                    assert(typeof agent.ask === 'function');
+                    assert(typeof agent.tell === 'function');
+
+                    workerId = agent.id;
+
+                    return agent.ask('echo', {msg: 'yahoo'})
+                    .then(function (res) {
+                        assert.strictEqual(res.msg, 'yahoo');
+                    });
+                })
+                .then(function () {
+                    return brs[1].start()
+                    .then(function () {
+                        brs[0].quit();
+                        brs[0] = new Broker('br00');
+                        /*
+                        return new Promise(function (resolve) {
+                            brs[0]._sub.unsubscribe(brs[0]._chBc, brs[0]._chUc);
+                            brs[0]._sub.on('unsubscribe', function (ch, count) {
+                                debug('on unsubscribe: ch=' + ch + ' count=' + count);
+                                if (count === 0) {
+                                    brs[0]._sub.removeAllListeners('unsubscribe');
+                                    resolve();
+                                }
+                            });
+                        });
+                        */
+                    });
+                })
+                .then(function () {
+                    return brs[1].findWorker(workerId)
+                    .then(function (agent) {
+                        assert.ok(agent !== null, 'Valid agent must be returned');
+                        assert.strictEqual(agent.id, workerId);
+                        return agent.ask('echo', { msg: 'yahoo!' });
+                    })
+                    .then(function (data) {
+                        debug('echoed data:', data);
+                    });
                 });
             });
         });
 
-        it('Create worker -> quit -> findWorker from other broker', function () {
-            var workerId;
+        describe('Worker destroy & recover test', function () {
+            beforeEach(function () {
+                numCreated = 0;
+                numRecovered = 0;
+                numDestroyed = 0;
+                // Use one broker
+                return brs[0].start();
+            });
 
-            brs[0].registerWorker(MyWorker);
-            brs[1].registerWorker(MyWorker);
-            return brs[0].createWorker('MyWorker', { attributes: { recoverable: true }})
-            .then(function (agent) {
-                assert(typeof agent === 'object');
-                assert(typeof agent.ask === 'function');
-                assert(typeof agent.tell === 'function');
-
-                workerId = agent.id;
-
-                return agent.ask('echo', {msg: 'yahoo'})
-                .then(function (res) {
-                    assert.strictEqual(res.msg, 'yahoo');
-                });
-            })
-            .then(function () {
-                return brs[1].start()
-                .then(function () {
-                    brs[0].quit();
-                    brs[0] = new Broker('br00');
-                    /*
-                    return new Promise(function (resolve) {
-                        brs[0]._sub.unsubscribe(brs[0]._chBc, brs[0]._chUc);
-                        brs[0]._sub.on('unsubscribe', function (ch, count) {
-                            debug('on unsubscribe: ch=' + ch + ' count=' + count);
-                            if (count === 0) {
-                                brs[0]._sub.removeAllListeners('unsubscribe');
-                                resolve();
-                            }
-                        });
-                    });
-                    */
-                });
-            })
-            .then(function () {
-                return brs[1].findWorker(workerId)
+            it('Go-Die-Go', function () {
+                brs[0].registerWorker(MyWorker);
+                return brs[0].createWorker('MyWorker', { attributes: { recoverable: true }})
                 .then(function (agent) {
-                    assert.ok(agent !== null, 'Valid agent must be returned');
-                    assert.strictEqual(agent.id, workerId);
-                    return agent.ask('echo', { msg: 'yahoo!' });
-                })
-                .then(function (data) {
-                    debug('echoed data:', data);
+                    debug('New agent: id=' + agent.id);
+                    assert(typeof agent === 'object');
+                    assert(typeof agent.ask === 'function');
+                    assert(typeof agent.tell === 'function');
+
+
+                    return agent.ask('echo', {msg: 'yahoo'})
+                    .then(function (res) {
+                        assert.strictEqual(res.msg, 'yahoo');
+                    })
+                    .then(function () {
+                        return agent.ask('die', {noRecover: false});
+                    })
+                    .then(function () {
+                        return agent.ask('echo', {msg: 'still there?'});
+                    })
+                    .then(function (res) {
+                        assert.strictEqual(res.msg, 'still there?');
+                        assert.equal(numCreated, 2);
+                        assert.equal(numRecovered, 1);
+                        assert.equal(numDestroyed, 1);
+                    });
+                });
+            });
+        });
+
+        describe('Worker destroy & recover test', function () {
+            beforeEach(function () {
+                // Use one broker
+                return brs[0].start();
+            });
+
+            it('Ask() after remote worker died', function () {
+                brs[0].registerWorker(MyWorker);
+                return brs[0].createWorker('MyWorker', { attributes: { recoverable: true }})
+                .then(function (agent) {
+                    debug('New agent: id=' + agent.id);
+                    assert(typeof agent === 'object');
+                    assert(typeof agent.ask === 'function');
+                    assert(typeof agent.tell === 'function');
+
+                    return agent.ask('die', {noRecover: true})
+                    .then(function () {
+                        // Echo against dead worker.
+                        return agent.ask('echo', {msg: 'yahoo'});
+                    })
+                    .then(function () {
+                        throw new Error('The ask should fail');
+                    }, function (err) {
+                        debug('Ask after remote worker died: err:', err);
+                        assert.equal(err.name, 'Error');
+                    });
                 });
             });
         });
     });
 
-    describe('Worker destroy & recover test', function () {
+    describe('In the different cluster', function () {
+        var WorkerClasses = [];
+
         beforeEach(function () {
-            numCreated = 0;
-            numRecovered = 0;
-            numDestroyed = 0;
-            // Use one broker
-            return brs[0].start();
+            return helper.initRedis()
+            .then(function () {
+                for (var i = 0; i < 4; ++i) {
+                    var HisWorker = function HisWorker() {
+                        MyWorker.apply(this, arguments);
+                    };
+                    util.inherits(HisWorker, MyWorker);
+                    HisWorker.clustername = 'c0' + i;
+                    WorkerClasses.push(HisWorker);
+
+                    var br = new Broker('br0' + i, {
+                        clustername: HisWorker.clustername,
+                        retries: {
+                            initialInterval: 25,
+                            maxInterval: 100,
+                            duration: 400
+                        }
+                    });
+
+                    br.registerWorker(HisWorker);
+                    brs.push(br);
+                }
+
+                return Promise.resolve(brs)
+                .each(function (br) {
+                    return br.start();
+                });
+            });
         });
 
-        it('Go-Die-Go', function () {
-            brs[0].registerWorker(MyWorker);
-            return brs[0].createWorker('MyWorker', { attributes: { recoverable: true }})
+        it('A worker once created in a cluster should be recovered in the same cluster', function () {
+            var br = brs[3];
+            return br.createWorker('HisWorker', { attributes: { recoverable: true }})
             .then(function (agent) {
-                debug('New agent: id=' + agent.id);
                 assert(typeof agent === 'object');
                 assert(typeof agent.ask === 'function');
                 assert(typeof agent.tell === 'function');
 
-
-                return agent.ask('echo', {msg: 'yahoo'})
+                return agent.ask('getClusterName', {})
                 .then(function (res) {
-                    assert.strictEqual(res.msg, 'yahoo');
-                })
-                .then(function () {
+                    assert.strictEqual(res.clustername, br.clustername);
                     return agent.ask('die', {noRecover: false});
                 })
                 .then(function () {
-                    return agent.ask('echo', {msg: 'still there?'});
+                    return agent.ask('getClusterName', {});
                 })
                 .then(function (res) {
-                    assert.strictEqual(res.msg, 'still there?');
-                    assert.equal(numCreated, 2);
-                    assert.equal(numRecovered, 1);
-                    assert.equal(numDestroyed, 1);
-                });
-            });
-        });
-    });
-
-    describe('Worker destroy & recover test', function () {
-        beforeEach(function () {
-            // Use one broker
-            return brs[0].start();
-        });
-
-        it('Ask() after remote worker died', function () {
-            brs[0].registerWorker(MyWorker);
-            return brs[0].createWorker('MyWorker', { attributes: { recoverable: true }})
-            .then(function (agent) {
-                debug('New agent: id=' + agent.id);
-                assert(typeof agent === 'object');
-                assert(typeof agent.ask === 'function');
-                assert(typeof agent.tell === 'function');
-
-                return agent.ask('die', {noRecover: true})
-                .then(function () {
-                    // Echo against dead worker.
-                    return agent.ask('echo', {msg: 'yahoo'});
-                })
-                .then(function () {
-                    throw new Error('The ask should fail');
-                }, function (err) {
-                    debug('Ask after remote worker died: err:', err);
-                    assert.equal(err.name, 'Error');
+                    assert.strictEqual(res.clustername, br.clustername);
                 });
             });
         });
