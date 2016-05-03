@@ -1,6 +1,6 @@
 {
   "name": "dworker",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Distributed Worker System",
   "main": "index.js",
   "scripts": {
@@ -46,23 +46,84 @@
   },
   "eslintConfig": {
     "rules": {
-      "callback-return": [2, ["callback", "cb", "next", "done"]],
-      "camelcase": [2, {"properties": "never"}],
+      "callback-return": [
+        2,
+        [
+          "callback",
+          "cb",
+          "next",
+          "done"
+        ]
+      ],
+      "camelcase": [
+        2,
+        {
+          "properties": "never"
+        }
+      ],
       "comma-dangle": 0,
-      "comma-spacing": [2, {"before": false, "after": true}],
-      "indent": [ 2, 4, { "SwitchCase": 1 } ],
-      "linebreak-style": [ 2, "unix" ],
-      "max-len": [2, 120, 4],
-      "no-extra-boolean-cast": [0],
+      "comma-spacing": [
+        2,
+        {
+          "before": false,
+          "after": true
+        }
+      ],
+      "indent": [
+        2,
+        4,
+        {
+          "SwitchCase": 1
+        }
+      ],
+      "linebreak-style": [
+        2,
+        "unix"
+      ],
+      "max-len": [
+        2,
+        120,
+        4
+      ],
+      "no-extra-boolean-cast": [
+        0
+      ],
       "no-new": 2,
-      "no-spaced-func": [2],
-      "no-trailing-spaces": [2],
-      "no-unused-vars": [2, {"args": "all"}],
-      "no-use-before-define": [2, "nofunc"],
-      "quotes": [ 0, "single" ],
-      "semi": [ 2, "always" ],
-      "space-after-keywords": [ 2, "always" ],
-      "space-before-function-paren": [2, {"anonymous": "always", "named": "never"}],
+      "no-spaced-func": [
+        2
+      ],
+      "no-trailing-spaces": [
+        2
+      ],
+      "no-unused-vars": [
+        2,
+        {
+          "args": "all"
+        }
+      ],
+      "no-use-before-define": [
+        2,
+        "nofunc"
+      ],
+      "quotes": [
+        0,
+        "single"
+      ],
+      "semi": [
+        2,
+        "always"
+      ],
+      "space-after-keywords": [
+        2,
+        "always"
+      ],
+      "space-before-function-paren": [
+        2,
+        {
+          "anonymous": "always",
+          "named": "never"
+        }
+      ],
       "space-return-throw-case": 2
     },
     "env": {
